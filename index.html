@@ -1,5 +1,6 @@
 <!--Aqui van los comentario y modificaciones aqui definimos el tipo de documento que va a desarollar-->
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <!--Aqui definimos el tipo de caracteres a usar-->
@@ -11,10 +12,10 @@
     <!--Aqui me puedo enlazar a archivos css de mi proyecto-->
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body style="background-color: lightpink;">
     <!--Etiquetas de texto-->
-    <h1>Aqui va el titulo de la pagina</h1>
-    <h2>Aqui esta el subtitulo 2</h2>
+    <h1 style="background-color: aqua;">Aqui va el titulo de la pagina</h1>
+    <h2 style="background-color: blueviolet;">Aqui esta el subtitulo 2</h2>
     <h3>Aqui esta el subtitulo 3</h3>
     <h4>Aqui esta el subtitulo 4</h4>
     <h5>Aqui esta el subtitulo 5</h5>
@@ -27,7 +28,69 @@
     </p>
     <hr>
     <!--Etiquetas de enlace-->
-    <a href="https://www.youtube.com/watch?v=GVWaDbFGLaQ" target="_blank">Ir a youtube</a>
+    <a style="background-color: aqua;" href="//www.youtube.com/watch?v=GVWaDbFGLaQ" target="_blank">Ir a youtube</a>
+    <br>
+    
+    <!--etiquetas tipo imagen-->
+    <img src="img/html5.png" alt="logo html5" width="200px" height="100px" style="border-radius: 80%;">
+    <br>
+    <img src="img/avatar.avif" alt="avatar" width="100px" height="100px" style="border-radius: 25%;">
+    <br>
+
+    <a href="paginas/contacto.html">Ir a Contactame</a>
+    <br>
+    <a href="paginas/otraspaginas/nostros.html">Ir a nostros</a>
+
+    <!--Etiquetas de listas-->
+    <br>
+    <h2>Paises de Latino America</h2>
+    <ul>
+        <li>Ecuador</li>
+        <li>Argentina</li>
+        <li>Brasil</li>
+    </ul>
+    <br>
+    <!--Etiquetas de lsitas ordenadas-->
+    <h2>Listas Ordenadas; Tabla de posiciones LigaPro</h2>
+    <ol type="A">
+        <li>Barcelona</li>
+        <li>Independiente del valle</li>
+        <li>Guayaquil City</li>
+    </ol>
+    <br>
+
+    <!--Tablas de posiciones-->
+    <table border="1">
+        <thead>
+            <th>Numero</th>
+            <th>Pais</th>
+            <th>Poplbacion</th>
+            <th colspan="4">Nombres</th>
+        </thead>
+
+        <tr>
+            <td>1</td>
+            <td>Ecuador</td>
+            <td>180000</td>
+            <td>Elvis</td>
+            <td>Pachacama</td>
+            <td>28</td>
+        </tr>
+    </table>
+    <!--Contenedores-->
+    <section>
+        <div>
+            <h2>Fomrmulario</h2>
+        </div>
+        <!--Creando formulario-->
+        <div style="text-align: center;">
+            <form action="">
+                <label for="">Ingrese el nombre</label>
+                <input type="text" name="" id="" placeholder="Ingrese su nombre" required>
+            </form>
+        </div>
+    </section>
+
 
 </body>
 </html>
