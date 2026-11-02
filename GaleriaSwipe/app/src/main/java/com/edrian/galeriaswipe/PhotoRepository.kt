@@ -11,10 +11,25 @@ import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/** Un álbum (carpeta) de la galería, con cuántas fotos le faltan por revisar. */
+data class Album(
+    val id: Long,
+    val nombre: String,
+    val total: Int,
+    val porRevisar: Int,
+    val portada: Uri,
+)
+
+enum class Orden(val texto: String) {
+    RECIENTES("Más recientes primero"),
+    ANTIGUAS("Más antiguas primero"),
+}
+
 data class Photo(
     val id: Long,
     val uri: Uri,
     val nombre: String,
+    val albumId: Long,
     val album: String,
     /** Milisegundos desde 1970. */
     val fecha: Long,
@@ -68,6 +83,7 @@ object PhotoRepository {
         val columnas = arrayOf(
             MediaStore.Images.Media._ID,
             MediaStore.Images.Media.DISPLAY_NAME,
+            MediaStore.Images.Media.BUCKET_ID,
             MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
             MediaStore.Images.Media.DATE_TAKEN,
             MediaStore.Images.Media.DATE_ADDED,
@@ -79,6 +95,7 @@ object PhotoRepository {
             context.contentResolver.query(coleccion, columnas, null, null, orden)?.use { c ->
                 val iId = c.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
                 val iNombre = c.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
+                val iAlbumId = c.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_ID)
                 val iAlbum = c.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
                 val iTomada = c.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_TAKEN)
                 val iAgregada = c.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED)
@@ -92,6 +109,7 @@ object PhotoRepository {
                             MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id
                         ),
                         nombre = c.getString(iNombre) ?: "",
+                        albumId = if (c.isNull(iAlbumId)) 0L else c.getLong(iAlbumId),
                         album = c.getString(iAlbum) ?: "",
                         fecha = fecha,
                     )

@@ -8,6 +8,10 @@ App de Android para limpiar tu galería estilo Tinder.
 - 🗑️ **Papelera** (ícono arriba a la derecha) → revisa las fotos que mandaste ahí,
   recupera las que se fueron por error y toca **Confirmar y eliminar** para borrarlas de verdad.
 
+- 📅 **Orden**: elige ver primero las más recientes o las más antiguas.
+- 📁 **Álbum**: revisa un solo álbum (Cámara, WhatsApp, Capturas…) o todos a la vez.
+  Cada álbum muestra cuántas fotos te faltan por revisar.
+
 Tu progreso se guarda: si cierras la app, sigue donde te quedaste.
 
 ## Cómo instalarla en tu celular

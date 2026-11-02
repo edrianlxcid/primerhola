@@ -161,6 +161,10 @@ fun PantallaSwipe(
                 .padding(padding)
                 .fillMaxSize()
         ) {
+            if (vm.fotos.isNotEmpty()) {
+                BarraFiltros(vm, Modifier.padding(bottom = 4.dp))
+            }
+
             if (accesoParcial) {
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceContainer,
@@ -199,10 +203,12 @@ fun PantallaSwipe(
                     )
 
                     cola.isEmpty() -> Terminado(
+                        album = vm.nombreAlbum,
                         enPapelera = enPapelera,
-                        hayConservadas = vm.conservadas.isNotEmpty(),
+                        hayConservadas = vm.hayConservadas,
                         onAbrirPapelera = onAbrirPapelera,
                         onRevisarDeNuevo = vm::revisarDeNuevo,
+                        onVerTodos = { vm.elegirAlbum(null) },
                     )
 
                     else -> {
@@ -394,16 +400,18 @@ private fun Etiqueta(texto: String, color: Color, alfa: Float, giro: Float, modi
 
 @Composable
 private fun Terminado(
+    album: String?,
     enPapelera: Int,
     hayConservadas: Boolean,
     onAbrirPapelera: () -> Unit,
     onRevisarDeNuevo: () -> Unit,
+    onVerTodos: () -> Unit,
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text("🎉", fontSize = 56.sp)
         Spacer(Modifier.height(12.dp))
         Text(
-            "¡Revisaste todas tus fotos!",
+            if (album == null) "¡Revisaste todas tus fotos!" else "¡Revisaste todo el álbum \"$album\"!",
             style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Center,
         )
@@ -417,6 +425,12 @@ private fun Terminado(
         if (hayConservadas) {
             OutlinedButton(onClick = onRevisarDeNuevo) {
                 Text("Volver a revisar las que conservé")
+            }
+        }
+        if (album != null) {
+            Spacer(Modifier.height(8.dp))
+            TextButton(onClick = onVerTodos) {
+                Text("Ver todos los álbumes")
             }
         }
     }

@@ -34,18 +34,61 @@ class GalleryViewModel(app: Application) : AndroidViewModel(app) {
 
     private val historial = mutableStateListOf<Accion>()
 
+    /** En qué orden se muestran las fotos. Se guarda entre sesiones. */
+    var orden by mutableStateOf(
+        Orden.entries.firstOrNull { it.name == prefs.getString(CLAVE_ORDEN, null) } ?: Orden.RECIENTES
+    )
+        private set
+
+    /** Álbum elegido, o null para ver todas las fotos. Se guarda entre sesiones. */
+    var albumSeleccionado by mutableStateOf(
+        prefs.getLong(CLAVE_ALBUM, SIN_ALBUM).takeIf { it != SIN_ALBUM }
+    )
+        private set
+
     /** Mensaje corto para mostrar abajo (snackbar). */
     var mensaje by mutableStateOf<String?>(null)
+
+    private val ordenadas: List<Photo> by derivedStateOf {
+        when (orden) {
+            Orden.RECIENTES -> fotos.sortedByDescending { it.fecha }
+            Orden.ANTIGUAS -> fotos.sortedBy { it.fecha }
+        }
+    }
 
     val porRevisar: List<Photo> by derivedStateOf {
         val c = conservadas
         val p = enPapelera
-        fotos.filter { it.id !in c && it.id !in p }
+        val a = albumSeleccionado
+        ordenadas.filter { (a == null || it.albumId == a) && it.id !in c && it.id !in p }
     }
 
     val papelera: List<Photo> by derivedStateOf {
         val p = enPapelera
-        fotos.filter { it.id in p }
+        ordenadas.filter { it.id in p }
+    }
+
+    /** Todos los álbumes, los más grandes primero. */
+    val albumes: List<Album> by derivedStateOf {
+        val c = conservadas
+        val p = enPapelera
+        fotos.groupBy { it.albumId }
+            .map { (id, lista) ->
+                Album(
+                    id = id,
+                    nombre = lista.first().album.ifBlank { "Sin nombre" },
+                    total = lista.size,
+                    porRevisar = lista.count { it.id !in c && it.id !in p },
+                    portada = lista.maxBy { it.fecha }.uri,
+                )
+            }
+            .sortedByDescending { it.total }
+    }
+
+    /** Nombre del álbum elegido, o null si estás viendo todas. */
+    val nombreAlbum: String? by derivedStateOf {
+        val a = albumSeleccionado ?: return@derivedStateOf null
+        albumes.firstOrNull { it.id == a }?.nombre
     }
 
     val puedeDeshacer: Boolean get() = historial.isNotEmpty()
@@ -72,9 +115,22 @@ class GalleryViewModel(app: Application) : AndroidViewModel(app) {
                     guardar(CLAVE_PAPELERA, p)
                 }
                 historial.removeAll { it.id !in ids }
+                // Si el álbum elegido ya no existe, volver a "Todas".
+                val a = albumSeleccionado
+                if (a != null && lista.none { it.albumId == a }) elegirAlbum(null)
             }
             cargando = false
         }
+    }
+
+    fun cambiarOrden(nuevo: Orden) {
+        orden = nuevo
+        prefs.edit().putString(CLAVE_ORDEN, nuevo.name).apply()
+    }
+
+    fun elegirAlbum(id: Long?) {
+        albumSeleccionado = id
+        prefs.edit().putLong(CLAVE_ALBUM, id ?: SIN_ALBUM).apply()
     }
 
     fun conservar(foto: Photo) {
@@ -119,11 +175,27 @@ class GalleryViewModel(app: Application) : AndroidViewModel(app) {
         mensaje = "Se recuperaron ${ids.size} fotos"
     }
 
-    /** Vuelve a mostrar las fotos que ya habías conservado. */
+    /**
+     * Vuelve a mostrar las fotos que ya habías conservado
+     * (solo las del álbum elegido, si hay uno).
+     */
     fun revisarDeNuevo() {
-        conservadas = emptySet()
+        val a = albumSeleccionado
+        val quitar = if (a == null) {
+            conservadas
+        } else {
+            fotos.filter { it.albumId == a && it.id in conservadas }.mapTo(HashSet()) { it.id }
+        }
+        conservadas = conservadas - quitar
         guardar(CLAVE_CONSERVADAS, conservadas)
-        historial.removeAll { !it.aPapelera }
+        historial.removeAll { !it.aPapelera && it.id in quitar }
+    }
+
+    /** ¿Hay fotos conservadas que se podrían volver a revisar (en el álbum actual)? */
+    val hayConservadas: Boolean by derivedStateOf {
+        val a = albumSeleccionado
+        val c = conservadas
+        if (a == null) c.isNotEmpty() else fotos.any { it.albumId == a && it.id in c }
     }
 
     /** Se llama cuando vuelve el diálogo del sistema (Android 11+). */
@@ -167,6 +239,9 @@ class GalleryViewModel(app: Application) : AndroidViewModel(app) {
     private companion object {
         const val CLAVE_CONSERVADAS = "conservadas"
         const val CLAVE_PAPELERA = "papelera"
+        const val CLAVE_ORDEN = "orden"
+        const val CLAVE_ALBUM = "album"
+        const val SIN_ALBUM = Long.MIN_VALUE
         const val MAX_HISTORIAL = 100
     }
 }
